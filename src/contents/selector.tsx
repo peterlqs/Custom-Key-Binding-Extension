@@ -13,7 +13,7 @@ function addHighlight() {
   const { style } = div
   style.backgroundColor = "#1d234280"
   style.boxSizing = "border-box"
-  style.border = "solid 2px #663e9e"
+  style.border = "solid 2px #1e1e1e"
   style.position = "fixed"
   style.zIndex = "9999"
   style.pointerEvents = "none"

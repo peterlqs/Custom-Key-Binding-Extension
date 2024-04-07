@@ -57,7 +57,7 @@ function IndexPopup() {
             onOpenChange={setIsOpen}
             className="space-y-2">
             <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-semibold">All Bindings</h1>
+              <h1 className="text-2xl font-semibold">Key Bindings</h1>
               <div className="flex flex-row gap-2">
                 <ModeToggle />
                 <CollapsibleTrigger asChild>

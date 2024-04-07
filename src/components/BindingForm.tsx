@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CollapsibleTrigger } from "@/components/ui/collapsible"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from "@/components/ui/collapsible"
 import {
   Form,
   FormControl,
@@ -19,7 +23,13 @@ import {
 } from "@/components/ui/tooltip"
 import { useToast } from "@/components/ui/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { BadgeAlert, CircleHelp, Pencil, TextSelect } from "lucide-react"
+import {
+  BadgeAlert,
+  ChevronsUpDown,
+  CircleHelp,
+  Pencil,
+  TextSelect
+} from "lucide-react"
 import { useEffect, useState } from "react"
 import { set, useForm } from "react-hook-form"
 import { z } from "zod"
@@ -38,7 +48,8 @@ const formSchema = z
     global: z.boolean(),
     url: z.boolean(),
     newTab: z.boolean(),
-    id: z.string()
+    id: z.string(),
+    elementWithText: z.boolean()
   })
   // Destination must be a valid URL
   .refine((data) => !data.url || data.destination.includes("."), {
@@ -55,7 +66,8 @@ export function BindingForm({ currentUrl }) {
       global: false,
       url: false,
       newTab: false,
-      id: ""
+      id: "",
+      elementWithText: false
     }
   })
 
@@ -64,6 +76,7 @@ export function BindingForm({ currentUrl }) {
     currentUrl,
     ""
   )
+
   // all global bindings
   const [allGlobalBindings, setAllGlobalBindings] = useStorage("global", "")
 
@@ -92,7 +105,8 @@ export function BindingForm({ currentUrl }) {
       global: data.global,
       url: data.url,
       newTab: data.newTab,
-      id: crypto.randomUUID()
+      id: crypto.randomUUID(),
+      elementWithText: data.elementWithText
     }
     // Set the new binding
     // if global, add to global storage
@@ -116,7 +130,7 @@ export function BindingForm({ currentUrl }) {
     // Show toast successful
     toast({
       variant: "success",
-      description: "Added successfully! RELOAD PAGE for the new binding to work"
+      description: "Added successfully, remeber to reload!"
     })
   }
   // Get the keys
@@ -184,7 +198,7 @@ export function BindingForm({ currentUrl }) {
         // If response is valid
         toast({
           variant: "success",
-          description: "Element selected"
+          description: "Element selected!"
         })
 
         form.setValue("destination", response)
@@ -204,6 +218,11 @@ export function BindingForm({ currentUrl }) {
         } else {
           setShowWarning("")
         }
+      } else {
+        toast({
+          variant: "destructive",
+          description: "Press Q to select the element"
+        })
       }
     }
     document.addEventListener("keydown", keydownListener)
@@ -304,7 +323,10 @@ export function BindingForm({ currentUrl }) {
                       <Input
                         autoComplete="false"
                         type="text"
-                        disabled={!form.getValues("url")}
+                        disabled={
+                          !form.getValues("url") &&
+                          !form.getValues("elementWithText")
+                        }
                         placeholder="Press button, then Q to select"
                         {...field}
                       />
@@ -358,21 +380,58 @@ export function BindingForm({ currentUrl }) {
                 )}
               />
 
-              <FormField
-                name="newTab"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel>Open link in new tab</FormLabel>
-                  </FormItem>
-                )}
-              />
+              {/* collapsible */}
+              <Collapsible className="w-full space-y-2 border rounded-lg">
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between space-x-4 pl-4">
+                    <h4 className="text-sm font-semibold">Advanced options</h4>
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      size="sm"
+                      className="w-9 p-0">
+                      <ChevronsUpDown className="h-4 w-4" />
+                      <span className="sr-only">Toggle</span>
+                    </Button>
+                  </div>
+                </CollapsibleTrigger>
+
+                <CollapsibleContent className="space-y-2 px-2 pb-2">
+                  <FormField
+                    name="newTab"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>Open link in new tab</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="elementWithText"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormLabel>
+                          [Name] of the target element (e.g., Login,
+                          Pricing,...)
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
             </div>
             <div className="flex justify-between gap-4">
               <CollapsibleTrigger asChild>

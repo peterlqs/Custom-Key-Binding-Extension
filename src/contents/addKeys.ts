@@ -6,10 +6,11 @@ async function main() {
   const currentUrl = window.location.href.split("/")[2]
   // local bindings
   const storage = new Storage()
-  let allLocalBindings = await storage.get(currentUrl)
+  const allLocalBindings = await storage.get(currentUrl)
   // global bindings
-  let allGlobalBindings = await storage.get("global")
-  // TODO: Sync storage or add reload buttonq
+  const allGlobalBindings = await storage.get("global")
+  // focusOnInput
+  const focusOnInput = await storage.get("focusOnInput")
 
   // combine to all bindings
   const allBindings = JSON.stringify(
@@ -17,6 +18,20 @@ async function main() {
       allGlobalBindings ? JSON.parse(allGlobalBindings) : []
     )
   )
+
+  // focus on input when press Alt + /
+  if (focusOnInput) {
+    document.addEventListener("keydown", (event) => {
+      if (event.altKey && event.key === "/") {
+        const input = document.querySelector(
+          "input, textarea"
+        ) as HTMLInputElement
+        if (input) {
+          input.focus()
+        }
+      }
+    })
+  }
 
   const pressedKeys = new Set()
   // Function to handle keydown events
@@ -69,6 +84,23 @@ async function main() {
           const element = document.querySelector(binding.destination)
           if (element) {
             ;(element as HTMLAnchorElement).click()
+          }
+        }
+
+        // Target is a button with name
+        if (binding.elementWithText === true) {
+          const elements = document.querySelectorAll("button, a")
+          // reverse the loop because the first element is at the end (a bit counterintuitive)
+          for (let i = elements.length - 1; i >= 0; i--) {
+            // for (let i = 0; i < elements.length; i++) {
+            if (
+              elements[i].textContent
+                .toLowerCase()
+                .includes(binding.destination.toLowerCase())
+            ) {
+              ;(elements[i] as HTMLButtonElement).click()
+              break
+            }
           }
         }
       }
